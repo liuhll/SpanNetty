@@ -8,6 +8,7 @@ namespace Http2Tiles
     using System.Runtime.InteropServices;
     using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
+    using DotNetty.Buffers;
     using DotNetty.Handlers.Logging;
     using DotNetty.Handlers.Tls;
     using DotNetty.Transport.Bootstrapping;
@@ -59,6 +60,7 @@ namespace Http2Tiles
 
             bootstrap
                 .Option(ChannelOption.SoBacklog, 1024)
+                .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
 
                 .Handler(new LoggingHandler("LSTN"))
 
