@@ -63,6 +63,11 @@ namespace DotNetty.Common.Concurrency
             ScheduledTaskQueue = new DefaultPriorityQueue<IScheduledRunnable>();
         }
 
+        /// <summary>
+        /// TBD
+        /// </summary>
+        protected abstract bool HasTasks { get; }
+
         [MethodImpl(InlineMethod.AggressiveOptimization)]
         protected static PreciseTimeSpan GetNanos() => PreciseTimeSpan.FromStart;
 
@@ -493,7 +498,14 @@ namespace DotNetty.Common.Concurrency
         {
             if (InEventLoop)
             {
+                var isBacklogEmpty = !HasTasks || IsEmpty(ScheduledTaskQueue);
                 ScheduleFromEventLoop(task);
+                if (isBacklogEmpty)
+                {
+                    // 在 Libuv.LoopExecutor 中，当任务执行完毕，清空任务队列后，后续如果只有 ScheduledTask 入队的情况下，
+                    // 并不会激发线程进行任务处理，需唤醒
+                    EnusreWakingUp(true);
+                }
             }
             else
             {
@@ -555,6 +567,12 @@ namespace DotNetty.Common.Concurrency
         {
             return true;
         }
+
+        /// <summary>
+        /// TBD
+        /// </summary>
+        /// <param name="inEventLoop"></param>
+        protected virtual void EnusreWakingUp(bool inEventLoop) { }
 
         sealed class NoOpRunnable : IRunnable
         {

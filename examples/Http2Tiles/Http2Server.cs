@@ -26,19 +26,21 @@ namespace Http2Tiles
     {
         public static readonly int PORT = int.Parse(ExampleHelper.Configuration["http2-port"]);
 
-        readonly IEventLoopGroup bossGroup;
-        readonly IEventLoopGroup workGroup;
+        readonly IEventLoopGroup _bossGroup;
+        readonly IEventLoopGroup _workGroup;
+        readonly bool _ssl;
 
-        public Http2Server(IEventLoopGroup bossGroup, IEventLoopGroup workGroup)
+        public Http2Server(IEventLoopGroup bossGroup, IEventLoopGroup workGroup, bool ssl)
         {
-            this.bossGroup = bossGroup;
-            this.workGroup = workGroup;
+            this._bossGroup = bossGroup;
+            this._workGroup = workGroup;
+            _ssl = ssl;
         }
 
         public Task<IChannel> StartAsync()
         {
             var bootstrap = new ServerBootstrap();
-            bootstrap.Group(this.bossGroup, this.workGroup);
+            bootstrap.Group(this._bossGroup, this._workGroup);
 
             if (ServerSettings.UseLibuv)
             {
@@ -66,14 +68,17 @@ namespace Http2Tiles
 
                 .ChildHandler(new ActionChannelInitializer<IChannel>(ch =>
                 {
-                    ch.Pipeline.AddLast(new TlsHandler(new ServerTlsSettings(tlsCertificate)
+                    if (_ssl)
                     {
-                        ApplicationProtocols = new List<SslApplicationProtocol>(new[]
+                        ch.Pipeline.AddLast(new TlsHandler(new ServerTlsSettings(tlsCertificate)
                         {
+                            ApplicationProtocols = new List<SslApplicationProtocol>(new[]
+                            {
                             SslApplicationProtocol.Http2,
                             SslApplicationProtocol.Http11
                         })
-                    }));
+                        }));
+                    }
                     ch.Pipeline.AddLast(new Http2OrHttpHandler());
                 }));
 

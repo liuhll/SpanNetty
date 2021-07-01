@@ -26,6 +26,7 @@
                 + $"\nProcessor Count : {Environment.ProcessorCount}\n");
 
             bool useLibuv = ServerSettings.UseLibuv;
+            var sslHttp2 = string.Equals(ExampleHelper.Configuration["ssl-http2"], "true", StringComparison.OrdinalIgnoreCase) ? true : false;
             Console.WriteLine("Transport type : " + (useLibuv ? "Libuv" : "Socket"));
 
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -62,7 +63,7 @@
 
             try
             {
-                Http2Server http2 = useLibuv ? new Http2Server(bossGroup2, workGroup2) : new Http2Server(bossGroup, workGroup);
+                Http2Server http2 = useLibuv ? new Http2Server(bossGroup2, workGroup2, sslHttp2) : new Http2Server(bossGroup, workGroup, sslHttp2);
                 http2Channel = await http2.StartAsync();
 
                 Console.WriteLine("Open your web browser and navigate to " + "http://127.0.0.1:" + HttpServer.PORT);

@@ -135,6 +135,9 @@ namespace DotNetty.Common.Concurrency
         /// </summary>
         public int BacklogLength => _taskQueue.Count;
 
+        /// <inheritdoc />
+        protected override bool HasTasks => _taskQueue.NonEmpty;
+
         void Loop(object s)
         {
             SetCurrentExecutor(this);
@@ -230,7 +233,7 @@ namespace DotNetty.Common.Concurrency
 
         protected override IEnumerable<IEventExecutor> GetItems() => new[] { this };
 
-        protected void WakeUp(bool inEventLoop)
+        protected internal virtual void WakeUp(bool inEventLoop)
         {
             if (!inEventLoop || (Volatile.Read(ref v_executionState) == ST_SHUTTING_DOWN))
             {

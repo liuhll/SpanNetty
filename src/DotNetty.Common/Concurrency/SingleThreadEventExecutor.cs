@@ -216,10 +216,8 @@ namespace DotNetty.Common.Concurrency
         /// </summary>
         public int BacklogLength => PendingTasks;
 
-        /// <summary>
-        /// TBD
-        /// </summary>
-        protected virtual bool HasTasks => _taskQueue.NonEmpty;
+        /// <inheritdoc />
+        protected override bool HasTasks => _taskQueue.NonEmpty;
 
         /// <summary>
         /// Gets the number of tasks that are pending for processing.

@@ -15,12 +15,12 @@
                 + "<style>body {background:#DDD;} div#netty { line-height:0;}</style>"
                 + "<link rel=\"shortcut icon\" href=\"about:blank\">"
                 + "<meta charset=\"UTF-8\"></head><body>A grid of 200 tiled images is shown below. Compare:"
-                + "<p>[<a href='https://" + Url(Http2Server.PORT) + "?latency=0'>HTTP/2, 0 latency</a>] [<a href='http://"
-                + Url(HttpServer.PORT) + "?latency=0'>HTTP/1, 0 latency</a>]<br/>" + "[<a href='https://"
+                + "<p>[<a href='http://" + Url(Http2Server.PORT) + "?latency=0'>HTTP/2, 0 latency</a>] [<a href='http://"
+                + Url(HttpServer.PORT) + "?latency=0'>HTTP/1, 0 latency</a>]<br/>" + "[<a href='http://"
                 + Url(Http2Server.PORT) + "?latency=30'>HTTP/2, 30ms latency</a>] [<a href='http://" + Url(HttpServer.PORT)
-                + "?latency=30'>HTTP/1, 30ms latency</a>]<br/>" + "[<a href='https://" + Url(Http2Server.PORT)
+                + "?latency=30'>HTTP/1, 30ms latency</a>]<br/>" + "[<a href='http://" + Url(Http2Server.PORT)
                 + "?latency=200'>HTTP/2, 200ms latency</a>] [<a href='http://" + Url(HttpServer.PORT)
-                + "?latency=200'>HTTP/1, 200ms latency</a>]<br/>" + "[<a href='https://" + Url(Http2Server.PORT)
+                + "?latency=200'>HTTP/1, 200ms latency</a>]<br/>" + "[<a href='http://" + Url(Http2Server.PORT)
                 + "?latency=1000'>HTTP/2, 1s latency</a>] [<a href='http://" + Url(HttpServer.PORT)
                 + "?latency=1000'>HTTP/1, " + "1s latency</a>]<br/>");
 

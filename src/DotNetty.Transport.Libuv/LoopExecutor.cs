@@ -29,6 +29,7 @@
 namespace DotNetty.Transport.Libuv
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -43,7 +44,9 @@ namespace DotNetty.Transport.Libuv
     {
         #region @@ Fields @@
 
-        private const int DefaultBreakoutTime = 100; //ms
+        private const long DefaultBreakoutTime = 100L; //ms
+        private const long MinimumBreakoutTime = 10L; //ms
+        private const long InfiniteBreakoutTime = 0L; //ms
 
         private static long s_initialTime;
         private static long s_startTimeInitialized;
@@ -123,7 +126,7 @@ namespace DotNetty.Transport.Libuv
             loopExecutor.SetCurrentExecutor(loopExecutor);
 
             _ = Task.Factory.StartNew(
-                executor => ((LoopExecutor)executor).StartLoop(), state,
+                static executor => ((LoopExecutor)executor).StartLoop(), state,
                 CancellationToken.None,
                 TaskCreationOptions.AttachedToParent,
                 loopExecutor.Scheduler);
@@ -237,6 +240,14 @@ namespace DotNetty.Transport.Libuv
             }
         }
 
+        protected override void EnusreWakingUp(bool inEventLoop)
+        {
+            if (_wakeUp)
+            {
+                _ = _timerHandle.Start(MinimumBreakoutTime, 0);
+            }
+        }
+
         protected override void OnBeginRunningAllTasks()
         {
             _wakeUp = false;
@@ -262,23 +273,28 @@ namespace DotNetty.Transport.Libuv
                 return;
             }
 
-            long nextTimeout = DefaultBreakoutTime;
+            var nextTimeout = InfiniteBreakoutTime;
             if (HasTasks)
             {
-                _ = _timerHandle.Start(nextTimeout, 0);
+                nextTimeout = DefaultBreakoutTime;
             }
-            else
+            else if (ScheduledTaskQueue.TryPeek(out IScheduledRunnable nextScheduledTask))
             {
-                if (ScheduledTaskQueue.TryPeek(out IScheduledRunnable nextScheduledTask))
+                long delayNanos = nextScheduledTask.DelayNanos;
+                if ((ulong)delayNanos > 0UL) // delayNanos 为非负值
                 {
-                    long delayNanos = nextScheduledTask.DelayNanos;
-                    if ((ulong)delayNanos > 0UL) // delayNanos >= 0
-                    {
-                        var timeout = PreciseTime.ToMilliseconds(delayNanos);
-                        nextTimeout = Math.Min(timeout, MaxDelayMilliseconds);
-                    }
-                    _ = _timerHandle.Start(nextTimeout, 0);
+                    var timeout = PreciseTime.ToMilliseconds(delayNanos);
+                    nextTimeout = Math.Min(timeout, MaxDelayMilliseconds);
                 }
+                else
+                {
+                    nextTimeout = MinimumBreakoutTime;
+                }
+            }
+
+            if ((ulong)nextTimeout > 0UL) // nextTimeout 为非负值
+            {
+                _ = _timerHandle.Start(nextTimeout, 0);
             }
         }
 
@@ -286,7 +302,7 @@ namespace DotNetty.Transport.Libuv
         {
             if (!IsShuttingDown)
             {
-                RunAllTasks(_preciseBreakoutInterval);
+                _ = RunAllTasks(_preciseBreakoutInterval);
             }
             else
             {

@@ -56,21 +56,21 @@ namespace DotNetty.Codecs.Http2.Tests
         }
     }
 
-    //public sealed class SocketHttp2ConnectionRoundtripTest : AbstractHttp2ConnectionRoundtripTest
-    //{
-    //    public SocketHttp2ConnectionRoundtripTest(ITestOutputHelper output) : base(output) { }
+    public sealed class SocketHttp2ConnectionRoundtripTest : AbstractHttp2ConnectionRoundtripTest
+    {
+        public SocketHttp2ConnectionRoundtripTest(ITestOutputHelper output) : base(output) { }
 
-    //    protected override void SetupServerBootstrap(ServerBootstrap bootstrap)
-    //    {
-    //        bootstrap.Group(new MultithreadEventLoopGroup(1), new MultithreadEventLoopGroup())
-    //                 .Channel<TcpServerSocketChannel>();
-    //    }
+        protected override void SetupServerBootstrap(ServerBootstrap bootstrap)
+        {
+            bootstrap.Group(new MultithreadEventLoopGroup(1), new MultithreadEventLoopGroup())
+                     .Channel<TcpServerSocketChannel>();
+        }
 
-    //    protected override void SetupBootstrap(Bootstrap bootstrap)
-    //    {
-    //        bootstrap.Group(new MultithreadEventLoopGroup()).Channel<TcpSocketChannel>();
-    //    }
-    //}
+        protected override void SetupBootstrap(Bootstrap bootstrap)
+        {
+            bootstrap.Group(new MultithreadEventLoopGroup()).Channel<TcpSocketChannel>();
+        }
+    }
 
     public sealed class LocalHttp2ConnectionRoundtripTest : AbstractHttp2ConnectionRoundtripTest
     {
